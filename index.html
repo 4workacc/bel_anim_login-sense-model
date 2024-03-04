@@ -1,15 +1,358 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            /* overflow: hidden; */
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 95vw;
+        }
+
+        #app {
+            width: 1000px;
+            height: 700px;
+        }
+
+        canvas {
+            width: 1000px;
+            display: block;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
+
 <body>
     <div id="app">
         <canvas id="canvas" width="1000"></canvas>
     </div>
-    <script src="./scripts.js"></script>    
+    <script>
+        class AnswerBlock {
+            constructor(x, y, color, word) {
+                this.color = color
+                this.x = x
+                this.y = y
+                this.word = word;
+                this.radius = 10
+                this.selected = false
+                this.active = true
+
+            }
+            draw(context) {
+                context.beginPath();
+                context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+                context.fillStyle = this.color;
+                context.fill();
+                context.lineWidth = 5;
+                context.strokeStyle = this.color;
+                context.stroke();
+
+                ctx.font = '24pt Times New Roman';
+                ctx.fillStyle = 'red';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.word, this.x, this.y - this.radius);
+            }
+            update() {
+                this.x += 0.1
+            }
+
+            select() {
+                this.selected = !this.selected
+            }
+
+            activate() {
+                this.active = !this.active
+            }
+        }
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d')
+        let w = canvas.width = 1000;
+        let h = canvas.height = 700;
+        let selectedAnswer = null;
+        let rightAnswersCount = 0;
+
+        let fontSize = 25;
+        let arrowHeight = {
+            x: 50,
+            y: 50
+        }
+        let midCoords = {
+            x: 500,
+            y: 400
+        };
+        let arrowCoords = [
+            {//0 vertical up
+                x: midCoords.x,
+                y: 0,
+                x1: 450,
+                y1: 80,
+                x2: 550,
+                y2: 80,
+                color: 'black',
+                text: 'часціцы',
+                fontSize: 45,
+                textMargin: {
+                    x: 0,
+                    y: 50
+                },
+            },
+            {
+                //1 horizontal left =,
+                x: 30,
+                y: midCoords.y,
+                x1: 30 + arrowHeight.x,
+                y1: midCoords.y - arrowHeight.y,
+                x2: 30 + arrowHeight.x,
+                y2: midCoords.y + arrowHeight.y,
+                color: 'black',
+                text: 'злучнікі',
+                fontSize: 45,
+                textMargin: {
+                    x: 200,
+                    y: 65
+                }
+            },
+            {
+                //2 horizontal right =,
+                x: 950,
+                y: midCoords.y,
+                x1: 970 - arrowHeight.x,
+                y1: midCoords.y - arrowHeight.y,
+                x2: 970 - arrowHeight.x,
+                y2: midCoords.y + arrowHeight.y,
+                color: 'black',
+                fontSize: 45,
+                text: 'прыназоўнікі',
+                textMargin: {
+                    x: -200,
+                    y: 65
+                }
+            },
+            { //3 vertical dowm
+                x: midCoords.x,
+                y: 670,
+                x1: midCoords.x - arrowHeight.x,
+                y1: 620,
+                x2: midCoords.x + arrowHeight.x,
+                y2: 620,
+                color: 'black',
+                text: 'text3',
+                textMargin: {
+                    x: 0,
+                    y: 15
+                }
+            },
+        ]
+        function drawCircle() {
+            if (canvas.getContext) {
+                ctx.beginPath();
+                ctx.fillStyle = "rgb(200,0,0)";
+                ctx.arc(midCoords.x, midCoords.y, 100, 0, 360 * Math.PI, false);
+                ctx.fill();
+
+                ctx.font = '24pt Times New Roman';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.fillText('Службовыя', midCoords.x, midCoords.y - fontSize + 10);
+                ctx.fillText('часціны', midCoords.x, midCoords.y + 10);
+                ctx.fillText('мовы', midCoords.x, midCoords.y + fontSize + 10);
+
+            }
+        }
+        const drawArrow = (context, x1, y1, x2, y2, t = 0.9) => {
+            const arrow = {
+                dx: x2 - x1,
+                dy: y2 - y1
+            };
+            const middle = {
+                x: arrow.dx * t + x1,
+                y: arrow.dy * t + y1
+            };
+            const tip = {
+                dx: x2 - middle.x,
+                dy: y2 - middle.y
+            };
+            context.beginPath();
+            context.fillStyle = "black"
+            context.strokeStyle = "black"
+            context.moveTo(x1, y1);
+            context.lineTo(middle.x, middle.y);
+            context.moveTo(middle.x + 0.5 * tip.dy, middle.y - 0.5 * tip.dx);
+            context.lineTo(middle.x - 0.5 * tip.dy, middle.y + 0.5 * tip.dx);
+            context.lineTo(x2, y2);
+            context.closePath();
+            context.stroke();
+        };
+        let wordsArr = ['а', 'але', 'бо', 'каб', 'не', 'ні', 'ж', 'жа', 'перад', 'за', 'ва', 'ca', 'па-над'];
+        function shuffle(array) {
+            array.sort(() => Math.random() - 0.5);
+        }
+        shuffle(wordsArr);
+        wordsArr = (wordsArr.slice(0, 10))
+
+        let answerBlocks = new Array(10).fill().map((el, ind) => new AnswerBlock(50 + ind * 100, 670, 'rgb(255, 165, 0)', wordsArr[ind]));
+
+        let getMouseCoords = (canvas, event) => {
+            let canvasCoords = canvas.getBoundingClientRect()
+            return {
+                x: event.pageX - canvasCoords.left,
+                y: event.pageY - canvasCoords.top
+            }
+        }
+        let getOffsetCoords = (mouse, rect) => {
+            return {
+                x: mouse.x - rect.x,
+                y: mouse.y - rect.y
+            }
+        }
+
+        let cursorInRect = (clickCoord, ansCood) => {
+            let xLine = clickCoord.x > ansCood.x - ansCood.radius && clickCoord.x < ansCood.x + ansCood.radius
+            let yLine = clickCoord.y > ansCood.y - ansCood.radius && clickCoord.y < ansCood.y + ansCood.radius
+
+            return xLine && yLine
+        }
+
+
+
+        canvas.addEventListener('mousedown', e => {
+            for (let i = 0; i < answerBlocks.length; i++) {
+                let el = answerBlocks[i];
+                let clickedCoor = {
+                    x: e.x - canvas.offsetLeft,
+                    y: e.y - canvas.offsetTop
+                }
+                let elCoord = {
+                    x: el.x,
+                    y: el.y,
+                    radius: el.radius
+                }
+                if (cursorInRect(clickedCoor, elCoord)) {
+                    if (el.active) el.selected = true;
+                }
+            }
+        })
+
+        canvas.addEventListener('mousemove', e => {
+            for (let i = 0; i < answerBlocks.length; i++) {
+                if (answerBlocks[i].selected) {
+                    answerBlocks[i].x = e.x - canvas.offsetLeft;
+                    answerBlocks[i].y = e.y - canvas.offsetTop;
+                }
+            }
+        })
+
+        let answerLines = [
+            [], [], []
+        ]
+        let rigntAnwersLines = [
+            ['не', 'ні', 'ж', 'жа'], //часціцы
+            ['а', 'але', 'бо', 'каб'], //Злучніікі
+            ['перад', 'ca', 'за', 'ва', 'па-над'] //прыназоўнікі
+        ]
+
+        let answerZones = [
+            {
+                zoneId: 0,
+                startX: 450,
+                startY: 40,
+                endX: 550,
+                endY: 300
+            },
+            {
+                zoneId: 1,
+                startX: 50,
+                startY: 350,
+                endX: 400,
+                endY: 450
+            },
+            {
+                zoneId: 2,
+                startX: 600,
+                startY: 350,
+                endX: 950,
+                endY: 450
+            }
+        ]
+
+        canvas.addEventListener('mouseup', e => {
+            checkAnswer(e.x - canvas.offsetLeft, e.y - canvas.offsetTop);
+        })
+
+        function inZone(mouseX, mouseY) {
+            for (let i = 0; i < answerZones.length; i++) {
+                let inX = mouseX > answerZones[i].startX && mouseX < answerZones[i].endX;
+                let inY = mouseY > answerZones[i].startY && mouseY < answerZones[i].endY;
+                if (inX && inY) {
+                    return answerZones[i].zoneId
+                }
+            }
+            return -1;
+        }
+
+        function checkAnswer(mouseX, mouseY) {
+            let zoneId = inZone(mouseX, mouseY);
+            if (zoneId !== -1) {
+                for (let i = 0; i < answerBlocks.length; i++) {
+                    if (answerBlocks[i].selected) {
+                        answerLines[zoneId].push(answerBlocks[i].word);
+                        let isRight = rigntAnwersLines[zoneId].indexOf(answerBlocks[i].word);
+                        if (isRight === -1) {
+                            answerBlocks[i].color = 'red'
+                        } else {
+                            answerBlocks[i].color = 'rgb(78, 192, 0)';
+                            rightAnswersCount += 1;
+                        }
+                        answerBlocks[i].active = false;
+                    };
+                };
+            }
+            for (let i = 0; i < answerBlocks.length; i++) {
+                answerBlocks[i].selected = false;
+            };
+        }
+
+        function drawRightCount() {
+            ctx.font = '24pt Times New Roman';
+            ctx.fillStyle = 'red';
+            ctx.textAlign = 'center';
+            ctx.fillText('Дакладных адказаў: ' + rightAnswersCount, 500, 550);
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, w, ctx.canvas.height)
+            ctx.fillStyle = 'white';            
+            drawArrow(ctx, 500, 400, 500, 40);
+            ctx.font = '40pt Times New Roman';
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            ctx.fillText('часціцы', 350, 100);
+            drawArrow(ctx, 500, 400, 40, 400);
+            ctx.fillText('злучнікі', 250, 450);
+            drawArrow(ctx, 500, 400, 960, 400);
+            ctx.fillText('прыназоўнікі', 750, 450);
+            drawCircle();
+            drawRightCount();
+            answerBlocks.forEach(e => {
+                e.draw(ctx)
+            })
+            window.requestAnimationFrame(animate)
+        }
+
+        animate()
+
+
+    </script>
 </body>
+
 </html>
