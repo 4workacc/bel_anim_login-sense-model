@@ -62,8 +62,8 @@ let arrowCoords = [
         color: 'black',
         text: 'text0',
         textMargin: {
-            x: 0,
-            y: -10
+            x: 10,
+            y: 150
         },
     },
     {
@@ -77,8 +77,8 @@ let arrowCoords = [
         color: 'black',
         text: 'text1',
         textMargin: {
-            x: 50,
-            y: -15
+            x: 200,
+            y: 25
         }
     },
     {
@@ -92,8 +92,8 @@ let arrowCoords = [
         color: 'black',
         text: 'text2',
         textMargin: {
-            x: -50,
-            y: -15
+            x: -200,
+            y: 25
         }
     },
     { //3 vertical dowm
@@ -140,7 +140,7 @@ function drawArrow(ind) {
         ctx.lineTo(arrowCoords[ind].x2, arrowCoords[ind].y2);
         ctx.stroke();
 
-        ctx.font = '24pt Calibri';
+        ctx.font = '70pt Calibri';
         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.textAlign = 'center';
         ctx.fillText(arrowCoords[ind].text,
@@ -149,8 +149,8 @@ function drawArrow(ind) {
     }
 }
 
-let wordsArr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-let answerBlocks = new Array(10).fill().map((el, ind) => new AnswerBlock(50 + ind * 100, 670, '#0000FF', wordsArr[ind]));
+let wordsArr = ['слова0', 'слова1', 'слова2', 'слова3', 'слова4', 'слова5', 'слова6', 'слова7', 'слова8', 'слова9'];
+let answerBlocks = new Array(10).fill().map((el, ind) => new AnswerBlock(50 + ind * 100, 670, 'rgb(255, 165, 0)', wordsArr[ind]));
 
 let getMouseCoords = (canvas, event) => {
     let canvasCoords = canvas.getBoundingClientRect()
@@ -206,9 +206,9 @@ let answerLines = [
     [], [], []
 ]
 let rigntAnwersLines = [
-    ['2', '3', '4', '6'],
-    ['0', '7', '8'],
-    ['1', '5', '9']
+    ['слова2', 'слова3', 'слова4', 'слова6'],
+    ['слова0', 'слова7', 'слова8'],
+    ['слова1', 'слова5', 'слова9']
 ]
 
 let answerZones = [
@@ -260,7 +260,7 @@ function checkAnswer(mouseX, mouseY) {
                 if (isRight === -1) {
                     answerBlocks[i].color = 'red'
                 } else {
-                    answerBlocks[i].color = 'green';
+                    answerBlocks[i].color = 'rgb(78, 192, 0)';
                     rightAnswersCount += 1;
                 }
                 answerBlocks[i].active = false;
